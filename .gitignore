@@ -3,4 +3,4 @@ __pycache__/
 *.pyc
 
 # dataset
-classification_data0/
+classification_data/
