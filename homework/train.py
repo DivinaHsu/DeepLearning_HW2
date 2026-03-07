@@ -34,6 +34,8 @@ def train(
 
     # directory with timestamp to save tensorboard logs and model checkpoints
     log_dir = Path(exp_dir) / f"{model_name}_{datetime.now().strftime('%m%d_%H%M%S')}"
+    log_dir.mkdir(parents=True, exist_ok=True)   # <<< ADD THIS LINE
+
     logger = tb.SummaryWriter(log_dir)
 
     # note: the grader uses default kwargs, you'll have to bake them in for the final submission

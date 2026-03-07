@@ -64,6 +64,9 @@ class MLPClassifier(nn.Module):
         h: int = 64,
         w: int = 64,
         num_classes: int = 6,
+        hidden_dim: int = 128,   # <<< ADDED
+
+
     ):
         """
         An MLP with a single hidden layer
@@ -122,6 +125,7 @@ class MLPClassifierDeep(nn.Module):
         # build hidden layers
         for i in range(num_layers):  # <<< ADDED
             layers.append(nn.Linear(input_dim, hidden_dim))  # <<< ADDED
+            #layers.append(nn.BatchNorm1d(hidden_dim))        # <<< ADDED (NEW LINE)
             layers.append(nn.ReLU())  # <<< ADDED
             input_dim = hidden_dim  # <<< ADDED
 
@@ -166,11 +170,18 @@ class MLPClassifierDeepResidual(nn.Module):
         input_dim = 3 * h * w                      # <<< ADDED
 
         self.input_layer = nn.Linear(input_dim, hidden_dim)   # <<< ADDED
+        #self.input_bn = nn.BatchNorm1d(hidden_dim)            # <<< ADDED (NEW)
+
 
         self.hidden_layers = nn.ModuleList([       # <<< ADDED
             nn.Linear(hidden_dim, hidden_dim)      # <<< ADDED
             for _ in range(num_layers)             # <<< ADDED
         ])                                         # <<< ADDED
+
+        #self.hidden_bn = nn.ModuleList([           # <<< ADDED (NEW)
+        #    nn.BatchNorm1d(hidden_dim)             # <<< ADDED
+        #    for _ in range(num_layers)             # <<< ADDED
+        #])
 
         self.relu = nn.ReLU()                      # <<< ADDED
 
@@ -187,11 +198,12 @@ class MLPClassifierDeepResidual(nn.Module):
         """
         x = self.flatten(x)                        # <<< ADDED
 
-        x = self.relu(self.input_layer(x))         # <<< ADDED
+        x = self.relu(self.input_layer(x))                           # <<< MODIFIED
 
-        for layer in self.hidden_layers:           # <<< ADDED
+
+        for layer in self.hidden_layers:            # <<< MODIFIED
             residual = x                           # <<< ADDED
-            x = self.relu(layer(x))                # <<< ADDED
+            x = self.relu(layer(x))                       # <<< MODIFIED
             x = x + residual                       # <<< ADDED (skip connection)
 
         x = self.output_layer(x)                   # <<< ADDED
@@ -223,6 +235,7 @@ def save_model(model):
     """
     for n, m in model_factory.items():
         if isinstance(model, m):
+            
             return torch.save(model.state_dict(), Path(__file__).resolve().parent / f"{n}.th")
     raise ValueError(f"Model type '{str(type(model))}' not supported")
 
